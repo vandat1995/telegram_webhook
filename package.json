@@ -1,0 +1,17 @@
+{
+  "name": "chatbot_tele",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "dat.nguyen2",
+  "license": "ISC",
+  "dependencies": {
+    "hapi": "^18.1.0",
+    "request": "^2.88.0",
+    "winston": "^3.2.1",
+    "winston-daily-rotate-file": "^4.4.0"
+  }
+}

@@ -101,3 +101,5 @@ public/
 package-lock.json
 logs/
 .vscode/
+
+config/config.json

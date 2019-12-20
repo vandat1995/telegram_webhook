@@ -3,6 +3,6 @@
         "host": "localhost",
         "port": 3000
     },
-    "botToken": "1055798233:AAEjtgEoyt0OtnP9zWDHUdvjGD88yiV6HFU",
-    "botUrl": "https://api.telegram.org/bot1055798233:AAEjtgEoyt0OtnP9zWDHUdvjGD88yiV6HFU"
+    "botToken": "",
+    "botUrl": ""
 }

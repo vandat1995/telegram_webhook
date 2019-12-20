@@ -2,6 +2,7 @@ const logger = require('../../config/logger');
 const config =  require('../../config/config.json');
 const request = require('../utils/HttpRequest');
 const botUrl = `${config.botUrl}/sendMessage`;
+
 const YASUO = {
     "exciter": {
         "pattern": /exciter/i,
@@ -215,6 +216,7 @@ const YASUO = {
         "title": true
     },
 }
+
 function detectContentV2(title, content) {
     title = title.toLowerCase().replace(/\.| +\./g, '');
     content = content.toLowerCase().replace(/\.| +\./g, '');
@@ -313,6 +315,7 @@ async function isPhoneNumber(msg) {
     }
     return '';
 }
+
 const handler = async (req, h) => {
     try {
         let data = req.payload;

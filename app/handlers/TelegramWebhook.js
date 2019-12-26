@@ -1,7 +1,9 @@
+const { exec } = require('child_process');
 const logger = require('../../config/logger');
-const config =  require('../../config/config.json');
+const config = require('../../config/config.json');
 const request = require('../utils/HttpRequest');
-const botUrl = `${config.botUrl}/sendMessage`;
+const urlSendMessage = `${config.botUrl}/sendMessage`;
+const urlSendSticker = `${config.botUrl}/sendSticker`;
 
 const YASUO = {
     "exciter": {
@@ -34,7 +36,7 @@ const YASUO = {
     },
     "hoi": {
         "pattern": /hỏi|hỏi về/i,
-        "reply": [          
+        "reply": [
             "[IMG]https://i.imgur.com/vp47msF.jpg[/IMG]"
         ],
         "title": true
@@ -119,7 +121,7 @@ const YASUO = {
             "đã báo hội chó quyền [IMG]https://i.imgur.com/QwJ0V0V.png[/IMG]"
         ],
         "title": true
-    }, 
+    },
     "thit_cho2": {
         "pattern": /thịt/i,
         "and": {
@@ -132,7 +134,7 @@ const YASUO = {
             "đã báo hội chó quyền [IMG]https://i.imgur.com/QwJ0V0V.png[/IMG]"
         ],
         "content": true
-    },    
+    },
     "test_bot": {
         "pattern": /b.?o.?t|b.?0.?t/i,
         "and": {
@@ -141,7 +143,7 @@ const YASUO = {
         },
         "reply": [
             //"muốn test thì nổ card viettel vào in bóc trước nhé [IMG]https://i.imgur.com/TWtHg3c.gif[/IMG]",
-            
+
             "tao không phải là trò để bọn mày test [IMG]https://i.imgur.com/KgmQHtR.png[/IMG]",
             "làm ơn đừng test tao nữa [IMG]https://i.imgur.com/4gmOAMB.png[/IMG]",
             "tao không phải là trò để bọn mày test :angry:",
@@ -157,7 +159,7 @@ const YASUO = {
         },
         "reply": [
             "mày ngu thì có [IMG]https://i.imgur.com/lhuVlcm.png[/IMG]",
-           
+
             "coi chừng tao [IMG]https://i.imgur.com/KgmQHtR.png[/IMG]"
         ],
         "title": true
@@ -170,7 +172,7 @@ const YASUO = {
         },
         "reply": [
             "mày ngu thì có [IMG]https://i.imgur.com/lhuVlcm.png[/IMG]",
-           
+
             "coi chừng tao [IMG]https://i.imgur.com/KgmQHtR.png[/IMG]"
         ],
         "content": true
@@ -182,7 +184,7 @@ const YASUO = {
             "content": true
         },
         "reply": [
-            
+
             "coi chừng tao [IMG]https://i.imgur.com/KgmQHtR.png[/IMG]",
             "ăn nói như thằng vô học vậy [IMG]https://i.imgur.com/4RJD3gO.png[/IMG][IMG]https://i.imgur.com/KgmQHtR.png[/IMG]"
         ],
@@ -195,7 +197,7 @@ const YASUO = {
             "title": true
         },
         "reply": [
-            
+
             "ăn nói như thằng vô học vậy [IMG]https://i.imgur.com/4RJD3gO.png[/IMG][IMG]https://i.imgur.com/KgmQHtR.png[/IMG]",
             "coi chừng tao [IMG]https://i.imgur.com/KgmQHtR.png[/IMG]"
         ],
@@ -206,12 +208,40 @@ const YASUO = {
         "reply": [
             "gọi tao có chuyện gì thế mai fen :canny:",
             "gọi tao có chuyện gì thế mai phen [IMG]https://i.imgur.com/osCpCsi.png[/IMG]",
-            
             "tính làm gì tao :canny:",
-            
-            "với tình trạng đạo đức xuống cấp như hiện nay thiếu tao là không thể :canny:",
-            "mày đang giấu cái gì đó :shame:",
+            "gì vậy ?",
             "mày post nhảm hơi nhiều rồi đấy [IMG]https://i.imgur.com/KgmQHtR.png[/IMG]"
+        ],
+        "title": true
+    },
+    "bot2": {
+        "pattern": /bot.ơi/i,
+        "reply": [
+            "gì vậy mai phen?",
+            "can i help you?",
+            "có gì hot"
+        ],
+        "title": true
+    },
+    "biet_khong": {
+        "pattern": /biết.không/i,
+        "reply": [
+            "không nha."
+        ],
+        "title": true
+    },
+    "vietllot": {
+        "pattern": /vietlot/i,
+        "reply": [
+            "không trúng đâu đừng mua 😂",
+            "mua đề con 09 đi 😂"
+        ],
+        "title": true
+    },
+    "tuc_qua": {
+        "pattern": /tức.quá/i,
+        "reply": [
+            "chuyện gì kể nghe chơi 😳"
         ],
         "title": true
     },
@@ -244,7 +274,7 @@ function detectContentV2(title, content) {
                 }
             } else {
                 return val['reply'][Math.floor(Math.random() * val['reply'].length)];
-            }      
+            }
         }
         if (val['title'] && !val['content'] && val['pattern'].test(title)) {
             if (val['and']) {
@@ -270,7 +300,7 @@ function detectContentV2(title, content) {
             } else {
                 return val['reply'][Math.floor(Math.random() * val['reply'].length)];
             }
-            
+
         }
         if (!val['title'] && val['content'] && val['pattern'].test(content)) {
             if (val['and']) {
@@ -316,6 +346,18 @@ async function isPhoneNumber(msg) {
     return '';
 }
 
+const execShell = command => {
+    return new Promise(resolve => {
+        exec(command, (err, stdout, stderr) => {
+            if (err) {
+                logger.error(err.toString());
+                return resolve(err.toString());
+            }
+            return resolve(stdout);
+        });
+    });
+};
+
 const handler = async (req, h) => {
     try {
         let data = req.payload;
@@ -324,30 +366,71 @@ const handler = async (req, h) => {
         const reqMsg = data.message.text;
         const chatId = data.message.chat.id;
         const username = data.message.from.username;
-        const fromName = `${data.message.from.first_name} ${data.message.from.last_name}`;        
-        
-        
-        let msgReply = (reqMsg && await isPhoneNumber(reqMsg)) || detectContentV2(reqMsg, reqMsg);        
-        msgReply = msgReply.replace(/\[IMG\]/g, '');
-        msgReply = msgReply.replace(/\[\/IMG\]/g, '');
-        msgReply = msgReply || `Sai cú pháp nhé ${fromName}`;
-        let payload = JSON.stringify({
-            'chat_id': chatId,
-            'text': msgReply
-        });
-        logger.info(`[SEND_TELE]: ${payload}`);
-        let reply = await request(botUrl, {
-            headers: {
-                'content-type': 'application/json'
-            },
-            body: payload
-        });
-        logger.info(`[RES_TELE]: ${reply}`);
-
+        const fromName = `${data.message.from.first_name} ${data.message.from.last_name}`;
+        if (reqMsg == '/show') {
+            const command = 'ps -ef | grep node';
+            let stdout = await execShell(command);
+            logger.info(stdout);
+            let reply = await request(urlSendMessage, {
+                headers: {
+                    'content-type': 'application/json'
+                },
+                body: JSON.stringify({
+                    'chat_id': chatId,
+                    'text': stdout
+                })
+            });
+            logger.info(`[RES_TELE]: ${reply}`);
+        } else if (username == 'datyasuo2' && reqMsg == '/bot') {
+            let payload = JSON.stringify({
+                'chat_id': chatId,
+                'text': 'Dạ đại ca gọi em có chuyện gì vậy.'
+            });
+            logger.info(`[SEND_TELE]: ${payload}`);
+            let reply = await request(urlSendMessage, {
+                headers: {
+                    'content-type': 'application/json'
+                },
+                body: payload
+            });
+            logger.info(`[RES_TELE]: ${reply}`);
+        } else {
+            if (data.message.sticker) {
+                let payload = JSON.stringify({
+                    'chat_id': chatId,
+                    'sticker': 'CAADAgADNyYAAktqAwAB5H3UcHKUmlQWBA'
+                });
+                logger.info(`[SEND_TELE]: ${payload}`);
+                let reply = await request(urlSendSticker, {
+                    headers: {
+                        'content-type': 'application/json'
+                    },
+                    body: payload
+                });
+                logger.info(`[RES_TELE]: ${reply}`);
+            } else {
+                let msgReply = (reqMsg && await isPhoneNumber(reqMsg)) || detectContentV2(reqMsg, reqMsg);
+                msgReply = msgReply.replace(/\[IMG\]/g, '');
+                msgReply = msgReply.replace(/\[\/IMG\]/g, '');
+                msgReply = msgReply || `Sai cú pháp nhé ${fromName}`;
+                let payload = JSON.stringify({
+                    'chat_id': chatId,
+                    'text': msgReply
+                });
+                logger.info(`[SEND_TELE]: ${payload}`);
+                let reply = await request(urlSendMessage, {
+                    headers: {
+                        'content-type': 'application/json'
+                    },
+                    body: payload
+                });
+                logger.info(`[RES_TELE]: ${reply}`);
+            }
+        }
     } catch (e) {
         logger.error(e.stack);
-    } 
-    return {'error': 0};
+    }
+    return { 'error': 0 };
 };
 
 module.exports = handler;

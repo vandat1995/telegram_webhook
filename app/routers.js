@@ -8,6 +8,12 @@ routers.push({
 
 routers.push({
     method: ['POST'],
+    path: '/api/telegram2',
+    handler: require('./handlers/WebhookBaoNguyen')
+});
+
+routers.push({
+    method: ['POST'],
     path: '/api/alert',
     handler: require('./handlers/AlertTelegram')
 });

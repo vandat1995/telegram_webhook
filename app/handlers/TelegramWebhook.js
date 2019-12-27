@@ -332,7 +332,8 @@ function detectContentV2(title, content) {
 }
 
 async function isPhoneNumber(msg) {
-    if (/^(\d{10,11},*.?)+$/.test(msg)) {
+    if (/^(\d{10,11},*.?)+$|^\/(\d{10,11},*.?)+$/.test(msg)) {
+        msg = msg.replace('/', '');
         let url = `http://vntelecom.vnta.gov.vn:10245/apps/api/checkNumber?phone_number=${msg}`;
         let res = await request(url, {
             headers: {

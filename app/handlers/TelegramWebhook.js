@@ -248,8 +248,8 @@ const YASUO = {
 }
 
 function detectContentV2(title, content) {
-    title = title.toLowerCase().replace(/\.| +\./g, '');
-    content = content.toLowerCase().replace(/\.| +\./g, '');
+    title = (title || '') && title.toLowerCase().replace(/\.| +\./g, '');
+    content = (content || '') && content.toLowerCase().replace(/\.| +\./g, '');
     for (let [key, val] of Object.entries(YASUO)) {
         if (val['title'] && val['content'] && val['pattern'].test(title) && val['pattern'].test(content)) {
             if (val['and']) {
